@@ -97,7 +97,7 @@ def getonlinecount():
         apiurl = "http://localhost:59881/api/v2/device/all"
         response = requests.get(apiurl)
         devicelist = response.json()['devices']
-        cnt = 0;
+        cnt = 0
         for d in devicelist:
             if d['operatingState'] == "UP":
                 cnt += 1
@@ -112,7 +112,7 @@ def getofflinecount():
         apiurl = "http://localhost:59880/api/v2/event/all"
         response = requests.get(apiurl)
         devicelist = response.json()['devices']
-        cnt = 0;
+        cnt = 0
         for d in devicelist:
             if d['operatingState'] == "DOWN":
                 cnt += 1
@@ -124,14 +124,14 @@ def getofflinecount():
 @cross_origin()
 def getactivecount():
     try:
-    	curr_time = time.time_ns()
-    	print(curr_time)
-    	prev_time = datetime.now() - timedelta(seconds = 2)
-    	prev_ns = int(time.mktime(prev_time.timetuple()) * pow(10, 9))
-    	print(prev_ns)
+        curr_time = time.time_ns()
+    	  print(curr_time)
+      	prev_time = datetime.now() - timedelta(seconds = 2)
+      	prev_ns = int(time.mktime(prev_time.timetuple()) * pow(10, 9))
+    	  print(prev_ns)
         apiurl1 = f"http://localhost:59880/api/v2/event/start/{prev_ns}/end/{curr_time}"
         response = requests.get(apiurl1)
-        return response.json();
+        return response.json()
     except Exception as e:
         return e
 
