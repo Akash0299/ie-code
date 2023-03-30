@@ -37,6 +37,13 @@ def provisiongatewaycertx509():
         if not verifyX509(devname,devhost,devprovpath):
             return "Device certificate is not valid and not trusted",500
         else:
+            dsname = device_data['device']['serviceName']
+            dsresp = requests.get('http://localhost:59881/api/v2/deviceservice/name/'+dsname)
+            dsaddr = dsresp.json()['service']['baseAddress']
+            dsport = dsaddr.split(':')[-1]
+            secret = json.dumps({
+               
+            })
             device_json = json.dumps({
                 "apiVersion": device_data['apiVersion'],
                 "device": {
