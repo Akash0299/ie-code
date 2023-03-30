@@ -15,7 +15,7 @@ def home():
 def provisiondevice():
     try:
         req_data = json.loads(request.data)
-        devprovmethod = req_data ['device']['authmethod']
+        devprovmethod = req_data ['device']['authMethod']
         if devprovmethod == 'X509':
             response = requests.post("http://localhost:5000/api/v1/gateway/provision/x509cert",json = req_data)
             return "", response.status_code
@@ -37,6 +37,20 @@ def provisiongatewaycertx509():
         if not verifyX509(devname,devhost,devprovpath):
             return "Device certificate is not valid and not trusted",500
         else:
+            dsname = device_data['device']['serviceName']
+            dsresp = requests.get('http://localhost:59881/api/v2/deviceservice/name/'+dsname)
+            dsaddr = dsresp.json()['service']['baseAddress']
+            dsport = dsaddr.split(':')[-1]
+            secret = json.dumps({
+                "apiVersion": "v2",
+                "path": "credentials",
+                "secretData": [
+                    {
+                        "key": devname + "-" + device_data['device']['authMethod'] ,
+                        "value": devprovpath
+                    }
+                ]
+            })
             device_json = json.dumps({
                 "apiVersion": device_data['apiVersion'],
                 "device": {
