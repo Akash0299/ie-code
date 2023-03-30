@@ -50,6 +50,10 @@ def createX509(devicename,host, path):
         
         # close connections
         sftp.close()
+<<<<<<< HEAD
         ssh.close() 
 
                 
+=======
+        ssh.close()                
+>>>>>>> 7b45d5472e498bef9138fcafcd7c4d012a74c35d

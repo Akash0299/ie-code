@@ -42,6 +42,7 @@ def provisiongatewaycertx509():
             dsaddr = dsresp.json()['service']['baseAddress']
             dsport = dsaddr.split(':')[-1]
             secret = json.dumps({
+<<<<<<< HEAD
                 "apiVersion": "v2",
                 "path": "credentials",
                 "secretData": [
@@ -50,6 +51,9 @@ def provisiongatewaycertx509():
                         "value": devprovpath
                     }
                 ]
+=======
+               
+>>>>>>> 7b45d5472e498bef9138fcafcd7c4d012a74c35d
             })
             device_json = json.dumps({
                 "apiVersion": device_data['apiVersion'],
