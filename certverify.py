@@ -6,14 +6,14 @@ from cryptography.hazmat.primitives.hashes import SHA256
 from cryptography.hazmat.backends import default_backend
 
 # Load the device certificate
-with open('device_cert1.pem', 'r') as f:
+with open('device_cert.pem', 'r') as f:
     cert = f.read()
     c = cert.split('\n')
     devcert = bytes('\n'.join(c[1:len(c)-1]),'utf-8')
     device_cert = x509.load_pem_x509_certificate(devcert, default_backend())
 
 # Load the CA certificate
-with open('ca_cert1.pem', 'r') as f:
+with open('ca_cert.pem', 'r') as f:
     cert = f.read()
     c = cert.split('\n')
     cacert = bytes('\n'.join(c[1:len(c)-1]),'utf-8')
