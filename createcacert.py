@@ -8,12 +8,18 @@ import paramiko
 def createX509(devicename,host, path):
     root_token = 's.up6ofuB4XGe5tPQUyzultZjz'
     rolename = 'my-role' 
-    payload=json.dumps({
-    "common_name": "edgex.com",
-    "ttl":"3154000"
+    headers = {
+      'X-Vault-Token': root_token,
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }
+    data = json.dumps({
+             "common_name": "edgex.com",
+             "ttl":"20000"
     })
+    print(data)
     if host == 'localhost' or host == '127.0.0.1':
-        resp1 = requests.post('http://localhost:8200/v1/pki/issue/'+rolename,headers = "X-Vault-Token:"+root_token, data = payload)
+        resp1=requests.post('http://127.0.0.1:8200/v1/pki/issue/'+rolename, headers=headers, data= data)
+        print(resp1.json())
         device_cert_pem = resp1.json()['data']['certificate']
         device_key_pem = resp1.json()['data']['private_key']
         DEVICE_CERT = path +"/"+devicename+"_cert.pem"
@@ -22,8 +28,9 @@ def createX509(devicename,host, path):
             f.write(device_cert_pem)
         with open(DEVICE_KEY, "wt") as f:
             f.write(device_key_pem)
+        print('Certificates created')
     else:
-        resp1 = requests.post('http://localhost:8200/v1/pki/issue/'+rolename,headers = "X-Vault-Token:"+root_token, data = payload)
+        resp1=requests.post('http://127.0.0.1:8200/v1/pki/issue/'+rolename, headers=headers, data= data)
         device_cert_pem = resp1.json()['data']['certificate']
         device_key_pem = resp1.json()['data']['private_key']
         DEVICE_CERT = devicename+"_cert.pem"
@@ -50,6 +57,5 @@ def createX509(devicename,host, path):
         
         # close connections
         sftp.close()
-        ssh.close() 
-
+        ssh.close()
                 
