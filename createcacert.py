@@ -28,7 +28,6 @@ def createX509(devicename,host, path):
             f.write(device_cert_pem)
         with open(DEVICE_KEY, "wt") as f:
             f.write(device_key_pem)
-        print('Certificates created')
     else:
         resp1=requests.post('http://127.0.0.1:8200/v1/pki/issue/'+rolename, headers=headers, data= data)
         device_cert_pem = resp1.json()['data']['certificate']
