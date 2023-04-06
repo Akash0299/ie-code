@@ -51,3 +51,5 @@ def getX509(devicename,host, path):
             f.read(device_cert_pem)
         with open(DEVICE_KEY, "r") as f:
             f.read(device_key_pem)
+
+        return device_cert_pem

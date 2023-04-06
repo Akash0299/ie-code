@@ -8,6 +8,7 @@ from createkey import createSymkey
 from getkey import getSymkey
 from verifysymkey import verifySymkey
 from renewcert import renewX509
+from renewkey import renewSymkey
 
 # creating a Flask app
 app = Flask(__name__)
@@ -164,8 +165,10 @@ def provisiongatewaysymkey():
         print(devhost)
         devprovpath = device_data['device']['path']
         print(devprovpath)
-        #createX509(devname,devhost, devprovpath)
-        if not verifySymkey(devname,devhost,devprovpath):
+
+        dsname = device_data['device']['serviceName']
+
+        if not verifySymkey(devname,devhost,devprovpath,dsname):
             print("Device symmetric key is not valid and not trusted")
             return "Device symmetric key is not valid and not trusted"
         else:
@@ -260,6 +263,29 @@ def renewx509cert(devicename):
     })
     secretresp = requests.post('http://localhost:'+str(dsport)+'/api/v2/secret', data=secret)
     return 'Renewed Certificate'
+
+@app.route('/api/v1/gateway/renew/symkey/<devicename>')
+def renewkey(devicename):
+    query = request.args
+    path = query.get('path')
+    host = query.get('host')
+    dsname = query.get('service')
+    dsresp = requests.get('http://localhost:59881/api/v2/deviceservice/name/'+dsname)
+    dsaddr = dsresp.json()['service']['baseAddress']
+    dsport = dsaddr.split(':')[-1]
+    renewSymkey(devicename, host, path, dsport)
+    secret = json.dumps({
+        "apiVersion": "v2",
+        "path": "credentials",
+        "secretData": [
+            {
+                "key": devicename + "-" + 'X509' + "@" + path ,
+                "value": getSymkey(devicename,host,path)
+            }
+        ]
+    })
+    secretresp = requests.post('http://localhost:'+str(dsport)+'/api/v2/secret', data=secret)
+    return 'Renewed Symmetric Key'
 
 if __name__ == '__main__':
     app.run('0.0.0.0',5000,debug = True)

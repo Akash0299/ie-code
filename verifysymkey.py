@@ -6,7 +6,7 @@ from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.hashes import SHA256
 from cryptography.hazmat.backends import default_backend
 
-def verifySymkey(devicename,host, path):
+def verifySymkey(devicename,host, path,service):
     #print(devicename,host, path)
     if host == 'localhost' or host == '127.0.0.1':
         DEVICE_KEY = path +"/"+devicename+"_sym.key"
@@ -15,9 +15,9 @@ def verifySymkey(devicename,host, path):
         with open(DEVICE_KEY, "r") as f:
             device_key = f.read()
 
-        apiurl = ""
+        apiurl = "http://127.0.0.1:8200/v1/secret/edgex/"+service+"/symkey"
         resp = requests.get(apiurl)
-        edgex_key = resp.json()['edgexkey']
+        edgex_key = resp.json()['data']['edgexkey']
 
         res = keyverify(device_key,edgex_key)
         
@@ -48,7 +48,7 @@ def verifySymkey(devicename,host, path):
         with open(DEVICE_KEY, "r") as f:
             device_key = f.read()
 
-        apiurl = ""
+        apiurl = "http://127.0.0.1:8200/v1/secret/edgex/"+service+"/symkey"
         resp = requests.get(apiurl)
         edgex_key = resp.json()['edgexkey']
 
