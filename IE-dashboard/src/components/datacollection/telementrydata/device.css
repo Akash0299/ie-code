@@ -1,0 +1,66 @@
+.devicestatus {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+.devicestatus h2 span {
+    color: #3f51b5;
+}
+.devicestatus h2 {
+    font-size: 12px;
+}
+.devicestatus p {
+    font-size: 12px;
+    font-weight: 500;
+    line-height: normal;
+    color: #808183;
+}
+.deviceloglist ul{
+    height: 200px;
+    overflow-y: scroll;
+}
+.deviceloglist ul li{
+    font-size: 12px;
+    line-height: 20px;
+    padding: 5px 0;
+    border-bottom: 1px solid #d4dae3;
+    font-weight: 500;
+}
+.speedmeter_wrapper{
+    display: flex;
+    flex-wrap: wrap;
+    align-content: stretch;
+    width: 100%;
+}
+.dev_speed{
+    margin: 10px;
+    background: #fff;
+    border: 1px solid #e6e6e7;
+    border-radius: 5px;
+    padding: 0 0 0 0px;
+    width: 170px;
+    height: 140px;
+}
+.dev_speed .speed-text {
+    background: #3f51b5;
+    color: #fff;
+    padding: 8px;
+}
+.dev_speed svg.speedometer {
+    padding: 0;
+    margin: 0 auto;
+    display: table;
+}
+.s_pading{
+    padding: 20px;
+}
+.dev_speed h2{
+    font-size: 16px;
+}
+.dev_speed p{
+    font-size: 16px;
+    padding: 15px 0;
+    text-align: right;
+    font-weight: bold;
+}
