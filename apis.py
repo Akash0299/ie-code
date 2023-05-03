@@ -22,7 +22,7 @@ def test(username):
     return "Welcome to Inteligent Edge:"+str(username)
 
 @app.route('/api/v1/gateway/create',methods=['POST'])
-def provisiondevice():
+def createsecret():
     try:
         req_data = json.loads(request.data)
         devcreatemethod = req_data ['device']['authMethod']
@@ -111,10 +111,10 @@ def provisiongatewaycertx509():
             #print(dsaddr,dsport)
             secret = json.dumps({
                 "apiVersion": "v2",
-                "path": "credentials",
+                "path": "credentials/"+devname,
                 "secretData": [
                     {
-                        "key": devname + "-" + device_data['device']['authMethod'] + "@" + devprovpath,
+                        "key": device_data['device']['authMethod'] + "@" + devprovpath,
                         "value": getX509(devname,devhost,devprovpath)
                     }
                 ]
@@ -181,10 +181,10 @@ def provisiongatewaysymkey():
             #print(dsaddr,dsport)
             secret = json.dumps({
                 "apiVersion": "v2",
-                "path": "credentials",
+                "path": "credentials/"+devname,
                 "secretData": [
                     {
-                        "key": devname + "-" + device_data['device']['authMethod'] + "@" + devprovpath ,
+                        "key": device_data['device']['authMethod'] + "@" + devprovpath ,
                         "value": getSymkey(devname,devhost,devprovpath)
                     }
                 ]
@@ -224,7 +224,7 @@ def provisiongatewaysymkey():
         return e
 
 
-@app.route('/api/v1/gateway/renew/<devicename>')
+@app.route('/api/v1/gateway/renew/<devicename>',methods=['PUT'])
 def renewdevicesecret(devicename):
     try:
         query = request.args
@@ -233,15 +233,15 @@ def renewdevicesecret(devicename):
         host = query.get('host')
         dsname = query.get('service')
         if devcreatemethod == 'X509':
-            response = requests.post("http://localhost:5000/api/v1/gateway/renew/x509cert/"+devicename+"?path="+path+"&host="+host+"&service="+dsname)
+            response = requests.put("http://localhost:5000/api/v1/gateway/renew/x509cert/"+devicename+"?path="+path+"&host="+host+"&service="+dsname)
             return response.text, response.status_code
         elif devcreatemethod == 'Symmetric Key':
-            response = requests.post("http://localhost:5000/api/v1/gateway/renew/symkey"+devicename+"?path="+path+"&host="+host+"&service="+dsname)
+            response = requests.put("http://localhost:5000/api/v1/gateway/renew/symkey"+devicename+"?path="+path+"&host="+host+"&service="+dsname)
             return response.text, response.status_code
     except Exception as e:
         return e
 
-@app.route('/api/v1/gateway/renew/x509cert/<devicename>')
+@app.route('/api/v1/gateway/renew/x509cert/<devicename>',methods=['PUT'])
 def renewx509cert(devicename):
     query = request.args
     path = query.get('path')
@@ -253,10 +253,10 @@ def renewx509cert(devicename):
     dsport = dsaddr.split(':')[-1]
     secret = json.dumps({
         "apiVersion": "v2",
-        "path": "credentials",
+        "path": "credentials/"+devicename,
         "secretData": [
             {
-                "key": devicename + "-" + 'X509' + "@" + path ,
+                "key": 'X509' + "@" + path ,
                 "value": getX509(devicename,host,path)
             }
         ]
@@ -264,7 +264,7 @@ def renewx509cert(devicename):
     secretresp = requests.post('http://localhost:'+str(dsport)+'/api/v2/secret', data=secret)
     return 'Renewed Certificate'
 
-@app.route('/api/v1/gateway/renew/symkey/<devicename>')
+@app.route('/api/v1/gateway/renew/symkey/<devicename>',methods=['PUT'])
 def renewkey(devicename):
     query = request.args
     path = query.get('path')
@@ -276,16 +276,67 @@ def renewkey(devicename):
     renewSymkey(devicename, host, path, dsport)
     secret = json.dumps({
         "apiVersion": "v2",
-        "path": "credentials",
+        "path": "credentials/"+devicename,
         "secretData": [
             {
-                "key": devicename + "-" + 'X509' + "@" + path ,
+                "key": 'Symmetric Key' + "@" + path ,
                 "value": getSymkey(devicename,host,path)
             }
         ]
     })
     secretresp = requests.post('http://localhost:'+str(dsport)+'/api/v2/secret', data=secret)
     return 'Renewed Symmetric Key'
+
+@app.route('/api/v1/gateway/deprovision/<devicename>',methods=['DELETE'])
+def deprovisiondevice(devicename):
+    try:
+        query = request.args
+        devcreatemethod = query.auth
+        serialnum = query.serialnum
+        service = query.service
+        if devcreatemethod == 'X509':
+            response = requests.delete("http://localhost:5000/api/v1/gateway/deprovision/x509cert/"+devicename+"?serialnum="+serialnum+"&service="+service)
+            return response.text, response.status_code
+        elif devcreatemethod == 'Symmetric Key':
+            response = requests.delete("http://localhost:5000/api/v1/gateway/deprovision/symkey"+devicename+"?service="+service)
+            return response.text, response.status_code
+    except Exception as e:
+        return e
+
+@app.route('/api/v1/gateway/deprovision/x509cert/<devicename>',methods=['DELETE'])
+def deprovisionX509(devicename):
+    try:
+        snum = request.args.serialnum
+        service = request.args.service
+        root_token = 's.up6ofuB4XGe5tPQUyzultZjz' 
+        headers = {
+            'X-Vault-Token': root_token,
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+        data = json.dumps({
+             "serial_number": snum
+        })
+        resp1=requests.post('http://127.0.0.1:8200/v1/pki/revoke', headers=headers, data= data)
+        requests.delete("https://127.0.0.1:8200/v1/secret/edgex/"+service+"credentials/"+devicename, headers=headers)
+        requests.delete("http://127.0.0.1:59881/api/v2/device/name/"+devicename)
+        return "Successfully deprovisioned the device"
+    except Exception as e:
+        return e
+
+@app.route('/api/v1/gateway/deprovision/symkey/<devicename>',methods=['DELETE'])
+def deprovisionSymkey(devicename):
+    try:
+        service = request.args.service
+        root_token = 's.up6ofuB4XGe5tPQUyzultZjz' 
+        headers = {
+            'X-Vault-Token': root_token,
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+        requests.delete("https://127.0.0.1:8200/v1/secret/edgex/"+service+"credentials/"+devicename, headers=headers)
+        requests.delete("http://127.0.0.1:59881/api/v2/device/name/"+devicename)
+        return "Successfully deprovisioned the device"
+    except Exception as e:
+        return e
 
 if __name__ == '__main__':
     app.run('0.0.0.0',5000,debug = True)
